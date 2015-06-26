@@ -4,22 +4,17 @@
 
 from __future__ import division
 
-from datetime import date
-import os
-import time
 from mimetypes import guess_type
 from os.path import join
 
 from flask import Flask, make_response, request, jsonify, render_template
-import requests
 from flask.ext.heroku import Heroku
-from sqlalchemy import desc
 from dictalchemy import make_class_dictable
 from flask.ext.script import Manager, prompt_bool
 from flask.ext.migrate import Migrate, MigrateCommand
 from werkzeug.contrib.fixers import ProxyFix
 
-from models import db, Project, Organization, Error
+from models import db
 from utils.response_utils import add_cors_header
 
 # -------------------
