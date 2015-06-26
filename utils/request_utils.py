@@ -7,7 +7,7 @@ def page_info(query, page, limit):
     '''
     # Get a bunch of projects.
     total = query.count()
-    last = int(ceil(total / limit))
+    last = int(ceil(total / float(limit)))
     offset = (page - 1) * limit
 
     return last, offset

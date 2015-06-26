@@ -13,6 +13,8 @@ from mock import Mock
 root_logger = logging.getLogger()
 root_logger.disabled = True
 
+from models import db, Organization, Project, Event, Story, Issue, Label, Error
+
 class FakeResponse:
     def __init__(self, text):
         self.text = text
@@ -30,9 +32,11 @@ class RunUpdateTestCase(unittest.TestCase):
         os.environ['SECRET_KEY'] = '123456'
         os.environ['MEETUP_KEY'] = 'abcdef'
 
-        from app import db
+        from app import app
 
         self.db = db
+        self.db.app = app
+        self.db.init_app(app)
         self.db.create_all()
 
         import run_update
@@ -203,8 +207,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
         self.db.session.flush()
 
-        from app import Organization, Project, Issue
-
         # check for the one organization
         filter = Organization.name == u'Cöde for Ameriça'
         organization = self.db.session.query(Organization).filter(filter).first()
@@ -255,8 +257,6 @@ class RunUpdateTestCase(unittest.TestCase):
             run_update.main(org_sources=run_update.TEST_ORG_SOURCES_FILENAME)
 
         self.db.session.flush()
-
-        from app import Organization, Project, Event, Issue
 
         # make sure old org is no longer there
         filter = Organization.name == u'Old Organization'
@@ -368,13 +368,10 @@ class RunUpdateTestCase(unittest.TestCase):
             with HTTMock(overwrite_response_content):
                 import run_update
                 run_update.main(org_sources=run_update.TEST_ORG_SOURCES_FILENAME)
-                from app import Error
                 errors = self.db.session.query(Error).all()
                 for error in errors:
                     self.assertTrue("ValueError" in error.error)
                 self.assertEqual(self.db.session.query(Error).count(), 1)
-
-        from app import Organization
 
         # Make sure no organizations exist
         orgs_count = self.db.session.query(Organization).count()
@@ -392,14 +389,13 @@ class RunUpdateTestCase(unittest.TestCase):
             with HTTMock(overwrite_response_content):
                 import run_update
                 run_update.main(org_sources=run_update.TEST_ORG_SOURCES_FILENAME)
-                from app import Error
+
                 errors = self.db.session.query(Error).all()
                 for error in errors:
                     self.assertTrue("ValueError" in error.error)
                 self.assertEqual(self.db.session.query(Error).count(), 3)
 
         # Make sure one good organization exists
-        from app import Organization
         orgs_count = self.db.session.query(Organization).count()
         self.assertEqual(orgs_count, 1)
 
@@ -420,8 +416,6 @@ class RunUpdateTestCase(unittest.TestCase):
                 run_update.main(org_sources=run_update.TEST_ORG_SOURCES_FILENAME)
 
         logging.error.assert_called_with('Code for America does not have a valid events url')
-
-        from app import Event
 
         # Make sure no events exist
         events_count = self.db.session.query(Event).count()
@@ -464,8 +458,6 @@ class RunUpdateTestCase(unittest.TestCase):
 
         self.db.session.flush()
 
-        from app import Story
-
         stories_count = self.db.session.query(Story).count()
         self.assertEqual(stories_count, 2)
 
@@ -488,12 +480,10 @@ class RunUpdateTestCase(unittest.TestCase):
                 import run_update
                 run_update.main(org_sources=run_update.TEST_ORG_SOURCES_FILENAME)
 
-        from app import Project
         projects = self.db.session.query(Project).all()
         for project in projects:
             self.assertIsNone(project.github_details)
 
-        from app import Error
         error = self.db.session.query(Error).first()
         self.assertEqual(error.error, "IOError: We done got throttled by GitHub")
 
@@ -652,7 +642,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         org_csv = '''name,website,events_url,rss,projects_list_url\nOrganization Name,,,,http://organization.org/projects.csv'''
@@ -735,7 +724,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         with HTTMock(self.response_content):
@@ -751,7 +739,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Label
         import run_update
 
         with HTTMock(self.response_content):
@@ -767,7 +754,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Label
         import run_update
 
         with HTTMock(self.response_content):
@@ -800,7 +786,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Organization, Project, Event, Story, Issue, Label
         import run_update
 
         self.organization_count = 3
@@ -882,7 +867,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Organization, Project, Event, Story, Issue, Label
         import run_update
 
         # for checking data from the source against what's in the database
@@ -999,7 +983,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         # save the default response for the cityvoice project
@@ -1046,7 +1029,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         # overwrite response content to send back a civic.json with some empty values
@@ -1081,7 +1063,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Organization, Project
         import run_update
 
         # only get one organization
@@ -1124,7 +1105,6 @@ class RunUpdateTestCase(unittest.TestCase):
                 run_update.main(org_sources=run_update.TEST_ORG_SOURCES_FILENAME)
 
         # Make sure no events exist
-        from app import Event
         self.assertEqual(self.db.session.query(Event).count(), 0)
 
     def test_unmodified_projects_stay_in_database(self):
@@ -1132,7 +1112,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         # run a standard run_update
@@ -1178,7 +1157,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         # run a standard run_update
@@ -1197,7 +1175,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         org_csv = '''name,website,events_url,rss,projects_list_url\nOrganization Name,,,,http://example.com/cfa-projects.csv'''
@@ -1258,7 +1235,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         def unicode_response_content(url, request):
@@ -1284,7 +1260,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         def unicode_response_content(url, request):
@@ -1310,7 +1285,6 @@ class RunUpdateTestCase(unittest.TestCase):
         '''
         self.setup_mock_rss_response()
 
-        from app import Project
         import run_update
 
         # set results_state to 'after' so we'll only get one project
