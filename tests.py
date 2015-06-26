@@ -9,9 +9,11 @@ import time
 
 from sqlalchemy.exc import IntegrityError
 
-from app import app, db, Organization, Project, Event, Story, Issue, Label
+from app import app
+
 from factories import OrganizationFactory, ProjectFactory, EventFactory, StoryFactory, IssueFactory, LabelFactory
 
+from models import db, Story, Project, Issue, Organization, Event, Label
 
 class ApiTest(unittest.TestCase):
 
