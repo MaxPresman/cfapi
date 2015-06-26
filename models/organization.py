@@ -6,13 +6,7 @@ from . import Project, Event, Story
 from datetime import date, datetime
 import time
 
-
-def safe_name(name):
-    ''' Return URL-safe organization name with spaces replaced by dashes.
-
-        Slashes will be removed, which is incompatible with raw_name().
-    '''
-    return name.replace(' ', '-').replace('/', '-').replace('?', '-').replace('#', '-')
+from utils.name_utils import safe_name
 
 class Organization(db.Model):
     '''

@@ -18,7 +18,8 @@ import feedparser
 
 from feeds import get_first_working_feed_link
 from models import db, Project, Organization, Story, Event, Error, Issue, Label
-from name_utils import is_safe_name
+from utils.name_utils import is_safe_name
+
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO)

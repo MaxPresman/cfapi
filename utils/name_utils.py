@@ -1,5 +1,3 @@
-
-
 def is_safe_name(name):
     ''' Return True if the string is a safe name.
     '''

@@ -23,10 +23,9 @@ from flask.ext.script import Manager, prompt_bool
 from flask.ext.migrate import Migrate, MigrateCommand
 from werkzeug.contrib.fixers import ProxyFix
 
-
 from models import db, Story, Issue, Project, Organization, Event, Label, Error
+from utils.name_utils import raw_name
 
-from name_utils import raw_name
 
 # -------------------
 # Init
