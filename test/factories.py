@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import factory
 from factory.alchemy import SQLAlchemyModelFactory
 
-from app import Organization, Project, Event, Story, db, Issue, Label
+from models import Organization, Project, Event, Story, db, Issue, Label
 
 
 class OrganizationFactory(SQLAlchemyModelFactory):
