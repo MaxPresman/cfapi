@@ -18,6 +18,7 @@ import feedparser
 
 from feeds import get_first_working_feed_link
 from models import db, Project, Organization, Story, Event, Error, Issue, Label
+from app import app
 from name_utils import is_safe_name
 
 # Logging Setup
@@ -29,6 +30,10 @@ requests_log.setLevel(logging.WARNING)
 # :NOTE: debug
 # import warnings
 # warnings.filterwarnings('error')
+
+# bind the db to the application
+db.app = app
+db.init_app(app)
 
 # org sources filenames
 ORG_SOURCES_FILENAME = 'org_sources.csv'
