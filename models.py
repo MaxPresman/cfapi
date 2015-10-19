@@ -15,8 +15,10 @@ from datetime import datetime, date
 import time
 
 from flask import request
+from dictalchemy import make_class_dictable
 
 db = SQLAlchemy()
+make_class_dictable(db.Model)
 
 # -------------------
 # Types

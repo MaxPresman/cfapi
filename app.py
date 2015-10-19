@@ -19,7 +19,7 @@ from flask.ext.heroku import Heroku
 from sqlalchemy import desc
 from sqlalchemy.sql.expression import func
 from sqlalchemy.orm import defer
-from dictalchemy import make_class_dictable
+
 from flask.ext.script import Manager, prompt_bool
 from flask.ext.migrate import Migrate, MigrateCommand
 from werkzeug.contrib.fixers import ProxyFix
@@ -33,6 +33,7 @@ from utils import raw_name
 
 app = Flask(__name__)
 heroku = Heroku(app)
+db.app = app
 db.init_app(app)
 
 migrate = Migrate(app, db)
@@ -47,8 +48,6 @@ def dropdb():
 @manager.command
 def createdb():
     db.create_all()
-
-make_class_dictable(db.Model)
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
